@@ -15,6 +15,7 @@ router.post('/', async (req, res, next) => {
       assignmentId: payload.assignmentId,
       sql: payload.sql,
       status: payload.status,
+      isCorrect: payload.isCorrect,
       errorMessage: payload.errorMessage
     });
     res.status(201).json(data);

@@ -1,6 +1,7 @@
 import { pool } from '../config/db.js';
 import { createHttpError } from '../middleware/errorHandler.js';
 import { validateSqlQuery } from '../utils/sqlValidation.js';
+import { evaluateExpectedOutput } from '../utils/resultComparison.js';
 
 export async function executeStudentQuery({ assignmentId, sql }) {
   const validation = validateSqlQuery(sql);
@@ -9,7 +10,7 @@ export async function executeStudentQuery({ assignmentId, sql }) {
   }
 
   const assignmentRes = await pool.query(
-    'SELECT id, db_schema, schema_tables FROM assignments WHERE id = $1 LIMIT 1',
+    'SELECT id, db_schema, expected_output FROM assignments WHERE id = $1 LIMIT 1',
     [assignmentId]
   );
 
@@ -25,16 +26,28 @@ export async function executeStudentQuery({ assignmentId, sql }) {
     try {
       await client.query('BEGIN');
       await client.query(`SET LOCAL search_path TO ${sanitizeIdentifier(dbSchema)}`);
+      const startedAt = Date.now();
       const result = await client.query({
         text: sql,
         query_timeout: 5000
       });
+      const durationMs = Date.now() - startedAt;
       await client.query('ROLLBACK');
 
+      const columns = result.fields.map((field) => field.name);
+      const rows = result.rows;
+      const evaluation = evaluateExpectedOutput({
+        expectedOutput: assignment.expected_output,
+        columns,
+        rows
+      });
+
       return {
-        columns: result.fields.map((field) => field.name),
-        rows: result.rows,
-        rowCount: result.rowCount
+        columns,
+        rows,
+        rowCount: result.rowCount,
+        durationMs,
+        evaluation
       };
     } catch (error) {
       await client.query('ROLLBACK');

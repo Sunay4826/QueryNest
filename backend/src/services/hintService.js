@@ -24,9 +24,19 @@ export async function generateHint({ assignmentId, sql }) {
 
   const assignment = assignmentRes.rows[0];
 
-  const systemPrompt =
-    'You are an SQL tutor. Give only guidance and conceptual hints. Never give full final SQL query. Keep response under 120 words.';
-  const userPrompt = `Assignment: ${assignment.title}\nQuestion: ${assignment.question}\nRequirements: ${assignment.requirements || ''}\nStudent SQL: ${sql || 'No query yet'}\nProvide one concise hint and one next step.`;
+  const systemPrompt = [
+    'You are an SQL tutor for learners.',
+    'Do not provide full final SQL query.',
+    'Never provide more than one query fragment of 8 tokens.',
+    'Focus on conceptual guidance, mistakes to check, and next action.',
+    'Output format:',
+    '1) Hint:',
+    '2) Next Step:',
+    '3) Check Yourself: (one verification question)',
+    'Keep total response under 120 words.'
+  ].join(' ');
+
+  const userPrompt = `Assignment: ${assignment.title}\nQuestion: ${assignment.question}\nRequirements: ${assignment.requirements || ''}\nStudent SQL: ${sql || 'No query yet'}\nProvide guidance only.`;
 
   if (provider === 'gemini') {
     if (!geminiApiKey) {
@@ -40,7 +50,6 @@ export async function generateHint({ assignmentId, sql }) {
       });
       return { hint: hintText, source: 'gemini' };
     } catch (error) {
-      // Keep product usable during API quota/rate outages.
       if ((error.statusCode === 429 || error.statusCode === 503) && hintFallbackEnabled) {
         return {
           hint: buildFallbackHint({ question: assignment.question, sql }),
@@ -57,7 +66,7 @@ export async function generateHint({ assignmentId, sql }) {
 
   const completion = await openai.chat.completions.create({
     model: openAiModel,
-    temperature: 0.4,
+    temperature: 0.3,
     messages: [
       {
         role: 'system',
@@ -71,7 +80,8 @@ export async function generateHint({ assignmentId, sql }) {
   });
 
   return {
-    hint: completion.choices[0]?.message?.content?.trim() || 'No hint available.'
+    hint: completion.choices[0]?.message?.content?.trim() || 'No hint available.',
+    source: 'openai'
   };
 }
 
@@ -95,7 +105,7 @@ async function generateGeminiHint({ apiKey, configuredModel, prompt }) {
             }
           ],
           generationConfig: {
-            temperature: 0.4,
+            temperature: 0.3,
             maxOutputTokens: 220
           }
         })
@@ -167,7 +177,11 @@ async function discoverGeminiModels(apiKey) {
   const models = Array.isArray(data?.models) ? data.models : [];
 
   return models
-    .filter((m) => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent'))
+    .filter(
+      (m) =>
+        Array.isArray(m.supportedGenerationMethods) &&
+        m.supportedGenerationMethods.includes('generateContent')
+    )
     .map((m) => String(m.name || '').replace(/^models\//, ''))
     .filter(Boolean);
 }
@@ -185,28 +199,24 @@ function buildFallbackHint({ question, sql }) {
   const q = String(question || '');
 
   if (!normalizedSql) {
-    return `Start with FROM on the main table in this question, then add SELECT columns needed in the output. Next step: write a basic query without filters and run it.`;
+    return 'Hint: Start with the core table in FROM. Next Step: run a minimal SELECT first. Check Yourself: Are selected columns exactly what output asks?';
   }
 
   if (!normalizedSql.includes('from')) {
-    return `Your query is missing a FROM clause. Next step: identify the table(s) in the sample data and add FROM before adding conditions.`;
+    return 'Hint: FROM clause is missing. Next Step: add FROM with correct table and rerun. Check Yourself: Did you reference the right table name from sample data?';
   }
 
   if (/\bcount\s*\(/i.test(q) && !/\bgroup\s+by\b/.test(normalizedSql)) {
-    return `For count-by-category problems, group rows by the category column. Next step: add GROUP BY on the department-like column used in your SELECT.`;
+    return 'Hint: Count questions often need grouping. Next Step: add GROUP BY for the category column. Check Yourself: Does each output row represent one group?';
   }
 
   if (/\btotal\b|\bsum\b|order value/i.test(q) && !/\bsum\s*\(/.test(normalizedSql)) {
-    return `This question needs aggregation. Next step: use SUM on the amount/value column and group by the entity name (for example customer).`;
+    return 'Hint: Aggregate total using SUM. Next Step: group by entity key/name. Check Yourself: Are duplicate rows collapsing into one row per entity?';
   }
 
   if (/\bhighest\b|\bmax\b/i.test(q) && !/\bmax\s*\(/.test(normalizedSql)) {
-    return `Think in two steps: find the maximum value, then match rows equal to that max. Next step: use a subquery with MAX(...) in a WHERE condition.`;
+    return 'Hint: Use MAX in a subquery or CTE. Next Step: compare row metric to computed max. Check Yourself: Are ties included when values are equal?';
   }
 
-  if (/\border\s+by\b/.test(normalizedSql) === false && /\btop\b|\bhighest\b/i.test(q)) {
-    return `You may need ranking/sorting. Next step: add ORDER BY on the key metric in descending order (or compare against MAX).`;
-  }
-
-  return `Your structure is close. Next step: verify selected columns, filtering condition, and any required grouping so output matches expected rows exactly.`;
+  return 'Hint: Your structure is close. Next Step: validate filters, joins, and grouping against expected output. Check Yourself: Does row count and column set match exactly?';
 }

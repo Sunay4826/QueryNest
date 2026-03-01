@@ -11,11 +11,19 @@ export default function SqlEditorPanel({ value, onChange, onExecute, onHint, loa
         options={{
           minimap: { enabled: false },
           fontSize: 14,
-          wordWrap: 'on'
+          wordWrap: 'on',
+          automaticLayout: true,
+          lineNumbersMinChars: 3,
+          tabSize: 2
         }}
       />
       <div className="editor-panel__actions">
-        <button className="btn btn--primary" type="button" onClick={onExecute} disabled={loadingQuery}>
+        <button
+          className="btn btn--primary"
+          type="button"
+          onClick={onExecute}
+          disabled={loadingQuery || !value.trim()}
+        >
           {loadingQuery ? 'Running...' : 'Execute Query'}
         </button>
         <button className="btn btn--ghost" type="button" onClick={onHint} disabled={loadingHint}>

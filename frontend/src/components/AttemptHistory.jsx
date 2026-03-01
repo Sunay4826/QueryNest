@@ -11,6 +11,11 @@ export default function AttemptHistory({ attempts }) {
             <span className={`difficulty difficulty--${item.status === 'success' ? 'easy' : 'hard'}`}>
               {item.status}
             </span>
+            {item.is_correct === true ? (
+              <span className="attempt-history__correct">Correct</span>
+            ) : item.is_correct === false ? (
+              <span className="attempt-history__wrong">Not yet correct</span>
+            ) : null}
             <span>{new Date(item.created_at).toLocaleString()}</span>
           </div>
           <code>{item.sql_query}</code>

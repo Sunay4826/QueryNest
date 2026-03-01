@@ -27,6 +27,7 @@ export default function AssignmentAttemptPage() {
 
   const [sql, setSql] = useState('SELECT * FROM table_name LIMIT 10');
   const [result, setResult] = useState({ columns: [], rows: [], rowCount: 0 });
+  const [evaluation, setEvaluation] = useState(null);
   const [hint, setHint] = useState('');
   const [error, setError] = useState('');
   const [attempts, setAttempts] = useState([]);
@@ -62,6 +63,7 @@ export default function AssignmentAttemptPage() {
     const firstTable = assignment.sampleData?.[0]?.tableName || 'table_name';
     setSql(`SELECT * FROM ${firstTable} LIMIT 10`);
     setResult({ columns: [], rows: [], rowCount: 0 });
+    setEvaluation(null);
     setHint('');
   }, [assignment]);
 
@@ -93,11 +95,13 @@ export default function AssignmentAttemptPage() {
         sql
       });
       setResult(response);
+      setEvaluation(response.evaluation || null);
       if (currentUser) {
         const saved = await saveAttempt({
           assignmentId: Number(assignmentId),
           sql,
           status: 'success',
+          isCorrect: response?.evaluation?.isCorrect,
           errorMessage: null
         });
         setAttempts((prev) => [saved, ...prev].slice(0, 20));
@@ -106,12 +110,14 @@ export default function AssignmentAttemptPage() {
       const message = getApiError(err, 'Failed to execute query.');
       setError(message);
       setResult({ columns: [], rows: [], rowCount: 0 });
+      setEvaluation(null);
       if (currentUser) {
         try {
           const saved = await saveAttempt({
             assignmentId: Number(assignmentId),
             sql,
             status: 'error',
+            isCorrect: null,
             errorMessage: message
           });
           setAttempts((prev) => [saved, ...prev].slice(0, 20));
@@ -227,6 +233,18 @@ export default function AssignmentAttemptPage() {
 
           <article className="panel">
             <h2 className="panel__title">Results</h2>
+            {evaluation?.hasExpectedOutput ? (
+              <div
+                className={`execution-feedback ${
+                  evaluation.isCorrect ? 'execution-feedback--success' : 'execution-feedback--warn'
+                }`}
+              >
+                <p>{evaluation.feedback}</p>
+                <small>
+                  Actual rows: {evaluation.actualRowCount} | Expected rows: {evaluation.expectedRowCount}
+                </small>
+              </div>
+            ) : null}
             <ResultTable columns={result.columns} rows={result.rows} rowCount={result.rowCount} />
           </article>
 
