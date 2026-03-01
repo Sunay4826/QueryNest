@@ -1,0 +1,55 @@
+@use './variables' as *;
+@use './mixins' as *;
+
+.page-shell {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 16px;
+
+  @include respond-sm {
+    padding: 24px;
+  }
+
+  &__header {
+    margin-bottom: 20px;
+    padding: 18px;
+    border-radius: 20px;
+    background: linear-gradient(120deg, rgba(255, 107, 53, 0.16), rgba(32, 180, 134, 0.2));
+    border: 1px solid rgba(255, 107, 53, 0.2);
+    animation: fade-up 0.45s ease;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.9rem;
+    letter-spacing: -0.02em;
+
+    @include respond-sm {
+      font-size: 2.45rem;
+    }
+  }
+
+  &__subtitle {
+    margin-top: 8px;
+    color: $color-muted;
+    font-size: 1.02rem;
+  }
+}
+
+.assignment-list {
+  display: grid;
+  gap: 14px;
+
+  @include respond-sm {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @include respond-lg {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.attempt-layout {
+  display: grid;
+  gap: 14px;
+}

@@ -1,0 +1,377 @@
+[
+  {
+    "title": "Find High Salary Employees",
+    "description": "Easy",
+    "question": "List all employees earning more than 50,000",
+    "sampleTables": [
+      {
+        "tableName": "employees",
+        "columns": [
+          { "columnName": "id", "dataType": "INTEGER" },
+          { "columnName": "name", "dataType": "TEXT" },
+          { "columnName": "salary", "dataType": "INTEGER" },
+          { "columnName": "department", "dataType": "TEXT" }
+        ],
+        "rows": [
+          { "id": 1, "name": "Alice", "salary": 45000, "department": "HR" },
+          { "id": 2, "name": "Bob", "salary": 60000, "department": "Engineering" },
+          { "id": 3, "name": "Charlie", "salary": 75000, "department": "Engineering" },
+          { "id": 4, "name": "Diana", "salary": 48000, "department": "Sales" }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "id": 2, "name": "Bob", "salary": 60000, "department": "Engineering" },
+        { "id": 3, "name": "Charlie", "salary": 75000, "department": "Engineering" }
+      ]
+    }
+  },
+  {
+    "title": "HR Team Members",
+    "description": "Easy",
+    "question": "Show all employees from the HR department",
+    "sampleTables": [
+      {
+        "tableName": "employees",
+        "columns": [
+          { "columnName": "id", "dataType": "INTEGER" },
+          { "columnName": "name", "dataType": "TEXT" },
+          { "columnName": "department", "dataType": "TEXT" }
+        ],
+        "rows": [
+          { "id": 1, "name": "Amit", "department": "HR" },
+          { "id": 2, "name": "Riya", "department": "Sales" },
+          { "id": 3, "name": "Kunal", "department": "HR" },
+          { "id": 4, "name": "Pia", "department": "Engineering" }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "id": 1, "name": "Amit", "department": "HR" },
+        { "id": 3, "name": "Kunal", "department": "HR" }
+      ]
+    }
+  },
+  {
+    "title": "Employees Starting With A",
+    "description": "Easy",
+    "question": "List employee names that start with letter A",
+    "sampleTables": [
+      {
+        "tableName": "employees",
+        "columns": [
+          { "columnName": "id", "dataType": "INTEGER" },
+          { "columnName": "name", "dataType": "TEXT" }
+        ],
+        "rows": [
+          { "id": 1, "name": "Aarav" },
+          { "id": 2, "name": "Meera" },
+          { "id": 3, "name": "Aisha" },
+          { "id": 4, "name": "Rahul" }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "name": "Aarav" },
+        { "name": "Aisha" }
+      ]
+    }
+  },
+  {
+    "title": "Sales Employees Sorted",
+    "description": "Easy",
+    "question": "Show sales department employees sorted by name",
+    "sampleTables": [
+      {
+        "tableName": "employees",
+        "columns": [
+          { "columnName": "id", "dataType": "INTEGER" },
+          { "columnName": "name", "dataType": "TEXT" },
+          { "columnName": "department", "dataType": "TEXT" }
+        ],
+        "rows": [
+          { "id": 1, "name": "Zara", "department": "Sales" },
+          { "id": 2, "name": "Anu", "department": "Sales" },
+          { "id": 3, "name": "Nikhil", "department": "Engineering" },
+          { "id": 4, "name": "Bhavna", "department": "Sales" }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "id": 2, "name": "Anu", "department": "Sales" },
+        { "id": 4, "name": "Bhavna", "department": "Sales" },
+        { "id": 1, "name": "Zara", "department": "Sales" }
+      ]
+    }
+  },
+  {
+    "title": "Department-wise Employee Count",
+    "description": "Medium",
+    "question": "Find the number of employees in each department",
+    "sampleTables": [
+      {
+        "tableName": "employees",
+        "columns": [
+          { "columnName": "id", "dataType": "INTEGER" },
+          { "columnName": "name", "dataType": "TEXT" },
+          { "columnName": "department", "dataType": "TEXT" }
+        ],
+        "rows": [
+          { "id": 1, "name": "Alice", "department": "HR" },
+          { "id": 2, "name": "Bob", "department": "Engineering" },
+          { "id": 3, "name": "Charlie", "department": "Engineering" },
+          { "id": 4, "name": "Diana", "department": "Sales" },
+          { "id": 5, "name": "Eve", "department": "Sales" }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "department": "HR", "count": 1 },
+        { "department": "Engineering", "count": 2 },
+        { "department": "Sales", "count": 2 }
+      ]
+    }
+  },
+  {
+    "title": "Total Order Value per Customer",
+    "description": "Medium",
+    "question": "Find total order value for each customer",
+    "sampleTables": [
+      {
+        "tableName": "customers",
+        "columns": [
+          { "columnName": "id", "dataType": "INTEGER" },
+          { "columnName": "name", "dataType": "TEXT" }
+        ],
+        "rows": [
+          { "id": 1, "name": "Aman" },
+          { "id": 2, "name": "Saurabh" }
+        ]
+      },
+      {
+        "tableName": "orders",
+        "columns": [
+          { "columnName": "id", "dataType": "INTEGER" },
+          { "columnName": "customer_id", "dataType": "INTEGER" },
+          { "columnName": "amount", "dataType": "REAL" }
+        ],
+        "rows": [
+          { "id": 1, "customer_id": 1, "amount": 1200.5 },
+          { "id": 2, "customer_id": 1, "amount": 800.0 },
+          { "id": 3, "customer_id": 2, "amount": 1500.0 }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "name": "Aman", "total_amount": 2000.5 },
+        { "name": "Saurabh", "total_amount": 1500.0 }
+      ]
+    }
+  },
+  {
+    "title": "Average Salary by Department",
+    "description": "Medium",
+    "question": "Find average salary in each department",
+    "sampleTables": [
+      {
+        "tableName": "employees",
+        "columns": [
+          { "columnName": "id", "dataType": "INTEGER" },
+          { "columnName": "department", "dataType": "TEXT" },
+          { "columnName": "salary", "dataType": "INTEGER" }
+        ],
+        "rows": [
+          { "id": 1, "department": "HR", "salary": 40000 },
+          { "id": 2, "department": "HR", "salary": 50000 },
+          { "id": 3, "department": "Engineering", "salary": 90000 },
+          { "id": 4, "department": "Engineering", "salary": 70000 },
+          { "id": 5, "department": "Sales", "salary": 60000 }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "department": "HR", "avg_salary": 45000 },
+        { "department": "Engineering", "avg_salary": 80000 },
+        { "department": "Sales", "avg_salary": 60000 }
+      ]
+    }
+  },
+  {
+    "title": "Customers with Order Count",
+    "description": "Medium",
+    "question": "Return each customer name with number of orders",
+    "sampleTables": [
+      {
+        "tableName": "customers",
+        "columns": [
+          { "columnName": "id", "dataType": "INTEGER" },
+          { "columnName": "name", "dataType": "TEXT" }
+        ],
+        "rows": [
+          { "id": 1, "name": "Ishita" },
+          { "id": 2, "name": "Dev" },
+          { "id": 3, "name": "Mona" }
+        ]
+      },
+      {
+        "tableName": "orders",
+        "columns": [
+          { "columnName": "id", "dataType": "INTEGER" },
+          { "columnName": "customer_id", "dataType": "INTEGER" }
+        ],
+        "rows": [
+          { "id": 1, "customer_id": 1 },
+          { "id": 2, "customer_id": 1 },
+          { "id": 3, "customer_id": 3 }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "name": "Ishita", "order_count": 2 },
+        { "name": "Dev", "order_count": 0 },
+        { "name": "Mona", "order_count": 1 }
+      ]
+    }
+  },
+  {
+    "title": "Highest Paid Employee",
+    "description": "Hard",
+    "question": "Find the employee(s) with the highest salary",
+    "sampleTables": [
+      {
+        "tableName": "employees",
+        "columns": [
+          { "columnName": "id", "dataType": "INTEGER" },
+          { "columnName": "name", "dataType": "TEXT" },
+          { "columnName": "salary", "dataType": "INTEGER" }
+        ],
+        "rows": [
+          { "id": 1, "name": "Alice", "salary": 70000 },
+          { "id": 2, "name": "Bob", "salary": 85000 },
+          { "id": 3, "name": "Charlie", "salary": 85000 }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "id": 2, "name": "Bob", "salary": 85000 },
+        { "id": 3, "name": "Charlie", "salary": 85000 }
+      ]
+    }
+  },
+  {
+    "title": "Second Highest Salary",
+    "description": "Hard",
+    "question": "Find employee(s) with the second highest salary",
+    "sampleTables": [
+      {
+        "tableName": "employees",
+        "columns": [
+          { "columnName": "id", "dataType": "INTEGER" },
+          { "columnName": "name", "dataType": "TEXT" },
+          { "columnName": "salary", "dataType": "INTEGER" }
+        ],
+        "rows": [
+          { "id": 1, "name": "A", "salary": 90000 },
+          { "id": 2, "name": "B", "salary": 80000 },
+          { "id": 3, "name": "C", "salary": 80000 },
+          { "id": 4, "name": "D", "salary": 70000 }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "id": 2, "name": "B", "salary": 80000 },
+        { "id": 3, "name": "C", "salary": 80000 }
+      ]
+    }
+  },
+  {
+    "title": "Customers Above Average Total Spend",
+    "description": "Hard",
+    "question": "Find customers whose total order amount is above the average customer total",
+    "sampleTables": [
+      {
+        "tableName": "customers",
+        "columns": [
+          { "columnName": "id", "dataType": "INTEGER" },
+          { "columnName": "name", "dataType": "TEXT" }
+        ],
+        "rows": [
+          { "id": 1, "name": "Nina" },
+          { "id": 2, "name": "Rohan" },
+          { "id": 3, "name": "Tia" }
+        ]
+      },
+      {
+        "tableName": "orders",
+        "columns": [
+          { "columnName": "id", "dataType": "INTEGER" },
+          { "columnName": "customer_id", "dataType": "INTEGER" },
+          { "columnName": "amount", "dataType": "REAL" }
+        ],
+        "rows": [
+          { "id": 1, "customer_id": 1, "amount": 200 },
+          { "id": 2, "customer_id": 1, "amount": 400 },
+          { "id": 3, "customer_id": 2, "amount": 100 },
+          { "id": 4, "customer_id": 3, "amount": 600 }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "name": "Nina", "total_amount": 600 },
+        { "name": "Tia", "total_amount": 600 }
+      ]
+    }
+  },
+  {
+    "title": "Top Department by Average Salary",
+    "description": "Hard",
+    "question": "Find department(s) with the highest average salary",
+    "sampleTables": [
+      {
+        "tableName": "employees",
+        "columns": [
+          { "columnName": "id", "dataType": "INTEGER" },
+          { "columnName": "department", "dataType": "TEXT" },
+          { "columnName": "salary", "dataType": "INTEGER" }
+        ],
+        "rows": [
+          { "id": 1, "department": "HR", "salary": 50000 },
+          { "id": 2, "department": "HR", "salary": 70000 },
+          { "id": 3, "department": "Engineering", "salary": 90000 },
+          { "id": 4, "department": "Engineering", "salary": 50000 },
+          { "id": 5, "department": "Sales", "salary": 80000 },
+          { "id": 6, "department": "Sales", "salary": 60000 }
+        ]
+      }
+    ],
+    "expectedOutput": {
+      "type": "table",
+      "value": [
+        { "department": "Engineering", "avg_salary": 70000 },
+        { "department": "Sales", "avg_salary": 70000 }
+      ]
+    }
+  }
+]

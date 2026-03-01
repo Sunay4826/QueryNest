@@ -1,0 +1,26 @@
+@use './variables' as *;
+
+@mixin respond-sm {
+  @media (min-width: 641px) {
+    @content;
+  }
+}
+
+@mixin respond-md {
+  @media (min-width: 1024px) {
+    @content;
+  }
+}
+
+@mixin respond-lg {
+  @media (min-width: 1281px) {
+    @content;
+  }
+}
+
+@mixin panel {
+  background: linear-gradient(180deg, $color-surface 0%, $color-surface-soft 100%);
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  box-shadow: $shadow-soft;
+}
