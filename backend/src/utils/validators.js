@@ -29,6 +29,5 @@ export const saveAttemptSchema = z.object({
   assignmentId: z.number().int().positive(),
   sql: z.string().min(1).max(5000),
   status: z.enum(['success', 'error']),
-  isCorrect: z.boolean().optional().nullable(),
   errorMessage: z.string().max(1000).optional().nullable()
 });

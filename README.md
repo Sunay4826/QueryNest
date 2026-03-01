@@ -65,7 +65,6 @@ Backend: `http://localhost:4000`
 - `GEMINI_MODEL=gemini-2.0-flash`
 - `HINT_FALLBACK=true`
 - `FRONTEND_ORIGIN=http://localhost:5173`
-- `MIN_QUESTIONS_PER_DIFFICULTY=15`
 
 ### frontend/.env
 - `VITE_API_BASE_URL=http://localhost:4000/api`

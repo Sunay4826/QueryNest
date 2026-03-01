@@ -2,14 +2,7 @@ import { pool } from '../config/db.js';
 import { getMongoDb } from '../config/mongo.js';
 import { createHttpError } from '../middleware/errorHandler.js';
 
-export async function saveAttempt({
-  userId,
-  assignmentId,
-  sql,
-  status,
-  isCorrect,
-  errorMessage
-}) {
+export async function saveAttempt({ userId, assignmentId, sql, status, errorMessage }) {
   const assignmentRes = await pool.query('SELECT id FROM assignments WHERE id = $1 LIMIT 1', [
     assignmentId
   ]);
@@ -26,7 +19,6 @@ export async function saveAttempt({
     assignment_id: assignmentId,
     sql_query: sql,
     status,
-    is_correct: typeof isCorrect === 'boolean' ? isCorrect : null,
     error_message: errorMessage || null,
     created_at: new Date()
   };
@@ -38,7 +30,6 @@ export async function saveAttempt({
     assignment_id: doc.assignment_id,
     sql_query: doc.sql_query,
     status: doc.status,
-    is_correct: doc.is_correct,
     error_message: doc.error_message,
     created_at: doc.created_at
   };
@@ -59,7 +50,6 @@ export async function listAttempts({ userId, assignmentId }) {
     assignment_id: doc.assignment_id,
     sql_query: doc.sql_query,
     status: doc.status,
-    is_correct: doc.is_correct ?? null,
     error_message: doc.error_message || null,
     created_at: doc.created_at
   }));

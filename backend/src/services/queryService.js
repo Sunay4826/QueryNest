@@ -1,7 +1,6 @@
 import { pool } from '../config/db.js';
 import { createHttpError } from '../middleware/errorHandler.js';
 import { validateSqlQuery } from '../utils/sqlValidation.js';
-import { evaluateExpectedOutput } from '../utils/resultComparison.js';
 
 export async function executeStudentQuery({ assignmentId, sql }) {
   const validation = validateSqlQuery(sql);
@@ -10,7 +9,7 @@ export async function executeStudentQuery({ assignmentId, sql }) {
   }
 
   const assignmentRes = await pool.query(
-    'SELECT id, db_schema, expected_output FROM assignments WHERE id = $1 LIMIT 1',
+    'SELECT id, db_schema FROM assignments WHERE id = $1 LIMIT 1',
     [assignmentId]
   );
 
@@ -18,36 +17,23 @@ export async function executeStudentQuery({ assignmentId, sql }) {
     throw createHttpError(404, 'Assignment not found.');
   }
 
-  const assignment = assignmentRes.rows[0];
-  const dbSchema = assignment.db_schema;
+  const dbSchema = assignmentRes.rows[0].db_schema;
 
   try {
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
       await client.query(`SET LOCAL search_path TO ${sanitizeIdentifier(dbSchema)}`);
-      const startedAt = Date.now();
       const result = await client.query({
         text: sql,
         query_timeout: 5000
       });
-      const durationMs = Date.now() - startedAt;
       await client.query('ROLLBACK');
 
-      const columns = result.fields.map((field) => field.name);
-      const rows = result.rows;
-      const evaluation = evaluateExpectedOutput({
-        expectedOutput: assignment.expected_output,
-        columns,
-        rows
-      });
-
       return {
-        columns,
-        rows,
-        rowCount: result.rowCount,
-        durationMs,
-        evaluation
+        columns: result.fields.map((field) => field.name),
+        rows: result.rows,
+        rowCount: result.rowCount
       };
     } catch (error) {
       await client.query('ROLLBACK');
@@ -56,9 +42,7 @@ export async function executeStudentQuery({ assignmentId, sql }) {
       client.release();
     }
   } catch (error) {
-    if (error?.statusCode) {
-      throw error;
-    }
+    if (error?.statusCode) throw error;
     throw createHttpError(400, `SQL error: ${error.message}`);
   }
 }
