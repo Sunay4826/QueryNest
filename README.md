@@ -58,7 +58,7 @@ Backend: `http://localhost:4000`
 - `NODE_ENV=development`
 - `DATABASE_URL=...` (PostgreSQL sandbox)
 - `MONGODB_URI=...` (MongoDB Atlas persistence)
-- `MONGODB_DB=ciphersqlstudio` (or `querynest`)
+- `MONGODB_DB=querynest`
 - `JWT_SECRET=...` (required)
 - `LLM_PROVIDER=gemini|openai`
 - `GEMINI_API_KEY=...` / `OPENAI_API_KEY=...`
