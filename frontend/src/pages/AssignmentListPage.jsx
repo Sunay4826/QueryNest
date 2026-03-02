@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import AuthPanel from '../components/AuthPanel';
+import AccountButton from '../components/AccountButton';
 import PageShell from '../components/PageShell';
 import { fetchAssignments, getApiError } from '../services/api';
 
@@ -33,6 +33,13 @@ export default function AssignmentListPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!loading && assignments.length && !activeDifficulty) {
+      setActiveDifficulty('Easy');
+      setActiveQuestionIndex(0);
+    }
+  }, [loading, assignments, activeDifficulty]);
+
   const groupedAssignments = useMemo(() => {
     const grouped = {
       Easy: [],
@@ -50,6 +57,7 @@ export default function AssignmentListPage() {
 
   const activeAssignments = groupedAssignments[activeDifficulty] || [];
   const activeQuestion = activeAssignments[activeQuestionIndex] || null;
+  const totalQuestions = assignments.length;
 
   function openSection(difficulty) {
     if (activeDifficulty === difficulty) {
@@ -76,12 +84,30 @@ export default function AssignmentListPage() {
       title="QueryNest"
       subtitle="Choose one section. When you open it, the question navigator appears below."
     >
-      <AuthPanel />
+      <div className="dashboard-topbar">
+        <AccountButton totalQuestions={totalQuestions} />
+      </div>
+
       {loading ? <p className="status">Loading assignments...</p> : null}
       {error ? <p className="status status--error">{error}</p> : null}
 
       {!loading && !error ? (
         <>
+          <section className="dashboard-strip">
+            <article className="dashboard-strip__card">
+              <h3>Total Questions</h3>
+              <p>{totalQuestions}</p>
+            </article>
+            <article className="dashboard-strip__card">
+              <h3>Difficulty Tracks</h3>
+              <p>3</p>
+            </article>
+            <article className="dashboard-strip__card">
+              <h3>Recommended Start</h3>
+              <p>Easy Section</p>
+            </article>
+          </section>
+
           {assignments.length ? (
             <div className="track-grid">
               {['Easy', 'Medium', 'Hard'].map((difficulty) => (
@@ -110,6 +136,21 @@ export default function AssignmentListPage() {
           ) : (
             <p className="status">No assignments available yet.</p>
           )}
+
+          <section className="learning-path panel">
+            <h2 className="panel__title">Learning Path</h2>
+            <div className="learning-path__steps">
+              <div>
+                <strong>1.</strong> Start with Easy section and complete at least 3 queries.
+              </div>
+              <div>
+                <strong>2.</strong> Move to Medium and practice grouping/join based problems.
+              </div>
+              <div>
+                <strong>3.</strong> Finish with Hard section and optimize your query logic.
+              </div>
+            </div>
+          </section>
 
           {activeDifficulty ? (
             <section className="section-browser panel">

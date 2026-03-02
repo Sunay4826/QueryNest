@@ -11,6 +11,7 @@ const __dirname = path.dirname(__filename);
 
 const seedFilePath = path.resolve(__dirname, '../../data/assignments.seed.json');
 const schemaSqlPath = path.resolve(__dirname, '../../sql/schema.sql');
+const QUESTIONS_PER_DIFFICULTY = 10;
 
 const TYPE_MAP = {
   INTEGER: 'INTEGER',
@@ -41,7 +42,7 @@ function mapDataType(type) {
 
 async function seed() {
   const rawSeed = await fs.readFile(seedFilePath, 'utf-8');
-  const assignments = JSON.parse(rawSeed);
+  const assignments = buildFixedQuestionSet(JSON.parse(rawSeed), QUESTIONS_PER_DIFFICULTY);
   const schemaSql = await fs.readFile(schemaSqlPath, 'utf-8');
 
   const client = await pool.connect();
@@ -123,7 +124,9 @@ async function seed() {
     }
 
     await client.query('COMMIT');
-    console.log(`Seed completed: ${assignments.length} assignments loaded.`);
+    console.log(
+      `Seed completed: ${assignments.length} assignments loaded (${QUESTIONS_PER_DIFFICULTY} per difficulty).`
+    );
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
@@ -137,3 +140,71 @@ seed().catch((error) => {
   console.error('Seed failed:', error.message);
   process.exit(1);
 });
+
+function buildFixedQuestionSet(items, countPerDifficulty) {
+  const buckets = { Easy: [], Medium: [], Hard: [] };
+
+  for (const item of items) {
+    const difficulty = normalizeDifficulty(item.description);
+    if (buckets[difficulty].length < countPerDifficulty) {
+      buckets[difficulty].push(item);
+    }
+  }
+
+  for (const difficulty of Object.keys(buckets)) {
+    if (!buckets[difficulty].length) {
+      throw new Error(`No ${difficulty} questions found in assignments.seed.json`);
+    }
+
+    let variant = 1;
+    while (buckets[difficulty].length < countPerDifficulty) {
+      const base = buckets[difficulty][(variant - 1) % buckets[difficulty].length];
+      buckets[difficulty].push(cloneAsVariant(base, difficulty, variant));
+      variant += 1;
+    }
+  }
+
+  return [...buckets.Easy, ...buckets.Medium, ...buckets.Hard];
+}
+
+function cloneAsVariant(item, difficulty, variant) {
+  const cloned = JSON.parse(JSON.stringify(item));
+  const suffix = buildUniqueSuffix(variant);
+  cloned.title = `${item.title} ${suffix}`;
+  cloned.question = item.question;
+  return cloned;
+}
+
+function buildUniqueSuffix(variant) {
+  return toRoman(variant + 1);
+}
+
+function toRoman(value) {
+  const map = [
+    [1000, 'M'],
+    [900, 'CM'],
+    [500, 'D'],
+    [400, 'CD'],
+    [100, 'C'],
+    [90, 'XC'],
+    [50, 'L'],
+    [40, 'XL'],
+    [10, 'X'],
+    [9, 'IX'],
+    [5, 'V'],
+    [4, 'IV'],
+    [1, 'I']
+  ];
+
+  let num = Number(value);
+  let output = '';
+
+  for (const [unit, numeral] of map) {
+    while (num >= unit) {
+      output += numeral;
+      num -= unit;
+    }
+  }
+
+  return output || 'I';
+}

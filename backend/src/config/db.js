@@ -14,6 +14,8 @@ dotenv.config({ path: backendEnvPath });
 
 const rawDatabaseUrl = process.env.DATABASE_URL;
 const databaseUrl = normalizeDatabaseUrl(rawDatabaseUrl);
+const pgRejectUnauthorized = toBoolean(process.env.PG_SSL_REJECT_UNAUTHORIZED, false);
+const usePgSsl = shouldUseSsl(rawDatabaseUrl) || shouldUseSsl(databaseUrl);
 
 if (!databaseUrl) {
   console.warn('DATABASE_URL is missing. Query execution endpoints will fail until configured.');
@@ -23,8 +25,8 @@ const poolConfig = {
   connectionString: databaseUrl
 };
 
-if (databaseUrl && shouldUseSsl(databaseUrl)) {
-  poolConfig.ssl = { rejectUnauthorized: false };
+if (databaseUrl && usePgSsl) {
+  poolConfig.ssl = { rejectUnauthorized: pgRejectUnauthorized };
 }
 
 export const pool = new Pool({
@@ -33,19 +35,49 @@ export const pool = new Pool({
 
 function normalizeDatabaseUrl(value) {
   if (!value) return value;
-  const trimmed = String(value).trim();
+  let trimmed = String(value).trim();
   if (trimmed.startsWith('fpostgres://')) {
-    return trimmed.replace(/^fpostgres:\/\//, 'postgres://');
+    trimmed = trimmed.replace(/^fpostgres:\/\//, 'postgres://');
   }
+
+  try {
+    const parsed = new URL(trimmed);
+    const sslMode = parsed.searchParams.get('sslmode');
+
+    if (sslMode) {
+      // Prefer explicit pg ssl config over URL-level sslmode parsing.
+      parsed.searchParams.delete('sslmode');
+      parsed.searchParams.delete('uselibpqcompat');
+      return parsed.toString();
+    }
+  } catch {
+    return trimmed;
+  }
+
   return trimmed;
 }
 
 function shouldUseSsl(connectionString) {
+  if (!connectionString) return false;
+
   try {
     const parsed = new URL(connectionString);
     const sslMode = parsed.searchParams.get('sslmode');
-    return sslMode === 'require' || parsed.hostname.endsWith('db.prisma.io');
+    const host = parsed.hostname;
+    const isLocal = host === 'localhost' || host === '127.0.0.1';
+    const knownManaged =
+      host.endsWith('db.prisma.io') ||
+      host.endsWith('supabase.co') ||
+      host.endsWith('neon.tech') ||
+      host.endsWith('railway.app');
+
+    return sslMode === 'require' || knownManaged || !isLocal;
   } catch {
     return false;
   }
+}
+
+function toBoolean(value, fallback) {
+  if (value == null || value === '') return fallback;
+  return String(value).trim().toLowerCase() === 'true';
 }

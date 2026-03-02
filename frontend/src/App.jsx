@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import AssignmentListPage from './pages/AssignmentListPage';
 import AssignmentAttemptPage from './pages/AssignmentAttemptPage';
 import DifficultySectionPage from './pages/DifficultySectionPage';
+import AuthPage from './pages/AuthPage';
 
 export default function App() {
   return (
@@ -9,6 +10,7 @@ export default function App() {
       <Route path="/" element={<AssignmentListPage />} />
       <Route path="/sections/:difficulty" element={<DifficultySectionPage />} />
       <Route path="/assignments/:assignmentId" element={<AssignmentAttemptPage />} />
+      <Route path="/auth" element={<AuthPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

@@ -1,11 +1,20 @@
 import { Router } from 'express';
 import { requireAuth } from '../middleware/auth.js';
 import { assignmentIdSchema, saveAttemptSchema } from '../utils/validators.js';
-import { listAttempts, saveAttempt } from '../services/attemptService.js';
+import { getAttemptSummary, listAttempts, saveAttempt } from '../services/attemptService.js';
 
 const router = Router();
 
 router.use(requireAuth);
+
+router.get('/summary', async (req, res, next) => {
+  try {
+    const summary = await getAttemptSummary({ userId: req.user.id });
+    res.status(200).json(summary);
+  } catch (error) {
+    next(error);
+  }
+});
 
 router.post('/', async (req, res, next) => {
   try {

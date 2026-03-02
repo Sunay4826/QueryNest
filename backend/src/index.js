@@ -48,17 +48,40 @@ app.use('/api/attempts', attemptRoutes);
 
 app.use(errorHandler);
 
-Promise.all([initializeDatabase(), initializeMongo()])
-  .then(() => {
-    app.listen(port, () => {
-      console.log(`Backend running on port ${port}`);
-    });
-  })
-  .catch((error) => {
-    console.error('Failed to initialize databases:', error.message);
-    process.exit(1);
-  });
+start();
 
 function isLocalDevOrigin(origin) {
   return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+}
+
+async function start() {
+  const allowStartWithoutMongo = toBoolean(process.env.ALLOW_START_WITHOUT_MONGO, true);
+
+  try {
+    await initializeDatabase();
+  } catch (error) {
+    console.error('Failed to initialize PostgreSQL:', error.message);
+    process.exit(1);
+  }
+
+  try {
+    await initializeMongo();
+  } catch (error) {
+    if (!allowStartWithoutMongo) {
+      console.error('Failed to initialize MongoDB:', error.message);
+      process.exit(1);
+    }
+    console.warn(
+      `MongoDB is unavailable. Continuing without auth/attempt persistence features. Reason: ${error.message}`
+    );
+  }
+
+  app.listen(port, () => {
+    console.log(`Backend running on port ${port}`);
+  });
+}
+
+function toBoolean(value, fallback) {
+  if (value == null || value === '') return fallback;
+  return String(value).trim().toLowerCase() === 'true';
 }

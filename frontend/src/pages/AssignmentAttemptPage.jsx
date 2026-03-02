@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import PageShell from '../components/PageShell';
 import SampleDataViewer from '../components/SampleDataViewer';
 import SqlEditorPanel from '../components/SqlEditorPanel';
@@ -18,6 +18,7 @@ import {
 
 export default function AssignmentAttemptPage() {
   const { assignmentId } = useParams();
+  const navigate = useNavigate();
 
   const [assignment, setAssignment] = useState(null);
   const [allAssignments, setAllAssignments] = useState([]);
@@ -85,6 +86,11 @@ export default function AssignmentAttemptPage() {
   }, [assignmentId, currentUser]);
 
   async function handleExecute() {
+    if (!currentUser) {
+      navigate(`/auth?redirect=${encodeURIComponent(`/assignments/${assignmentId}`)}`);
+      return;
+    }
+
     try {
       setLoadingQuery(true);
       setError('');
@@ -94,32 +100,28 @@ export default function AssignmentAttemptPage() {
       });
       setResult(response);
 
-      if (currentUser) {
-        const saved = await saveAttempt({
-          assignmentId: Number(assignmentId),
-          sql,
-          status: 'success',
-          errorMessage: null
-        });
-        setAttempts((prev) => [saved, ...prev].slice(0, 20));
-      }
+      const saved = await saveAttempt({
+        assignmentId: Number(assignmentId),
+        sql,
+        status: 'success',
+        errorMessage: null
+      });
+      setAttempts((prev) => [saved, ...prev].slice(0, 20));
     } catch (err) {
       const message = getApiError(err, 'Failed to execute query.');
       setError(message);
       setResult({ columns: [], rows: [], rowCount: 0 });
 
-      if (currentUser) {
-        try {
-          const saved = await saveAttempt({
-            assignmentId: Number(assignmentId),
-            sql,
-            status: 'error',
-            errorMessage: message
-          });
-          setAttempts((prev) => [saved, ...prev].slice(0, 20));
-        } catch {
-          // Ignore history save failure to keep main flow smooth.
-        }
+      try {
+        const saved = await saveAttempt({
+          assignmentId: Number(assignmentId),
+          sql,
+          status: 'error',
+          errorMessage: message
+        });
+        setAttempts((prev) => [saved, ...prev].slice(0, 20));
+      } catch {
+        // Ignore history save failure to keep main flow smooth.
       }
     } finally {
       setLoadingQuery(false);

@@ -84,12 +84,17 @@ export async function fetchAttempts(assignmentId) {
   return response.data;
 }
 
+export async function fetchAttemptSummary() {
+  const response = await api.get('/attempts/summary');
+  return response.data;
+}
+
 export function getApiError(error, fallback) {
   if (error?.code === 'ECONNABORTED') {
-    return 'Request timed out. Please retry.';
+    return 'Request is taking too long. Please try again in a moment.';
   }
   if (error?.message === 'Network Error') {
-    return 'Cannot reach backend. Check backend server, CORS origin, and API URL.';
+    return 'Server is currently unavailable. Please refresh the page and try again.';
   }
   return error?.response?.data?.error || error?.message || fallback;
 }

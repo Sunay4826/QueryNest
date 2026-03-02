@@ -54,3 +54,17 @@ export async function listAttempts({ userId, assignmentId }) {
     created_at: doc.created_at
   }));
 }
+
+export async function getAttemptSummary({ userId }) {
+  const db = getMongoDb();
+  const attempts = db.collection('query_attempts');
+
+  const assignmentIds = await attempts.distinct('assignment_id', {
+    user_id: String(userId),
+    status: 'success'
+  });
+
+  return {
+    doneCount: assignmentIds.length
+  };
+}
